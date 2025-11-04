@@ -1,0 +1,23 @@
+{
+  "name": "Coolio",
+  "short_name": "Coolio",
+  "description": "Smarter Kühlschrank",
+  "start_url": "/",
+  "scope": "/",
+  "display": "fullscreen",
+  "background_color": "#ffffff",
+  "theme_color": "#4facfe",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/static/logo.jpeg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "/static/logo.jpeg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}
