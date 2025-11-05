@@ -105,8 +105,8 @@ Antworte im folgenden JSON-Format (ohne Markdown, nur pures JSON):
   "servings": "2 Personen"
 }}"""
 
-        # Generiere mit Gemini
-        model = genai.GenerativeModel('gemini-pro')
+        # Generiere mit Gemini 2.5 Flash (aktuelle Version)
+        model = genai.GenerativeModel('gemini-2.5-flash')
         response = model.generate_content(prompt)
 
         # Parse JSON Response

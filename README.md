@@ -73,6 +73,7 @@ Die App läuft dann auf `http://localhost:8888`
 - ✅ **Realistische Rezepte** - Nur kochbare, sinnvolle Gerichte
 - ✅ **Kreativ & Praktisch** - Nutzt vorhandene Zutaten optimal
 - ✅ **Kostenlos** - Google Gemini API ist im Free Tier kostenlos (60 Anfragen/Min)
+- ✅ **Neueste KI** - Verwendet Gemini 2.5 Flash (Stand 2025)
 
 ## 📝 API Key Limits (Google Gemini Free Tier)
 
