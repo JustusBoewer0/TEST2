@@ -1,7 +1,8 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 import requests
 import json
 import os
+import random
 
 app = Flask(__name__)
 app.secret_key = "mega-geheimes-passwort"  # für Sessions
@@ -45,6 +46,171 @@ def speichere_users(users):
 
 
 users = lade_users()
+
+
+# ------------------ KI REZEPT GENERATOR ------------------
+def generiere_rezept(produkte_liste):
+    """
+    Generiert ein kreatives Rezept basierend auf den verfügbaren Produkten.
+    Verwendet ein intelligentes Template-System für realistische Rezepte.
+    """
+    if not produkte_liste or len(produkte_liste) == 0:
+        return None
+
+    # Extrahiere nur die Produktnamen
+    produkt_namen = [p["name"].lower() for p in produkte_liste]
+
+    # Kategorisiere Produkte
+    kategorien = {
+        "gemüse": ["tomate", "gurke", "paprika", "zwiebel", "knoblauch", "karotte", "salat", "spinat", "brokkoli", "zucchini", "aubergine"],
+        "fleisch": ["hähnchen", "hühnchen", "chicken", "rind", "schwein", "hackfleisch", "wurst", "schinken", "speck"],
+        "fisch": ["lachs", "thunfisch", "forelle", "garnele", "fisch"],
+        "milchprodukte": ["milch", "käse", "butter", "sahne", "joghurt", "quark", "mozzarella", "parmesan"],
+        "kohlenhydrate": ["nudeln", "pasta", "reis", "kartoffel", "brot", "brötchen"],
+        "gewürze": ["salz", "pfeffer", "paprika", "curry", "oregano", "basilikum", "petersilie"],
+        "obst": ["apfel", "banane", "erdbeere", "orange", "zitrone", "kirsche", "traube"]
+    }
+
+    # Finde passende Kategorien
+    gefundene_kategorien = set()
+    for produkt in produkt_namen:
+        for kategorie, keywords in kategorien.items():
+            if any(keyword in produkt for keyword in keywords):
+                gefundene_kategorien.add(kategorie)
+
+    # Rezept-Templates basierend auf verfügbaren Zutaten
+    rezept_templates = []
+
+    # Pasta-Rezepte
+    if "kohlenhydrate" in gefundene_kategorien or any("nudel" in p or "pasta" in p for p in produkt_namen):
+        rezept_templates.append({
+            "title": "Cremige Pasta mit frischen Zutaten",
+            "description": "Ein schnelles und leckeres Pasta-Gericht mit Zutaten aus deinem Kühlschrank",
+            "base_ingredients": ["Pasta oder Nudeln", "Olivenöl", "Salz & Pfeffer"],
+            "time": "ca. 20-25 Minuten",
+            "servings": "2 Personen",
+            "steps": [
+                "Einen großen Topf mit Salzwasser zum Kochen bringen",
+                "Die Nudeln nach Packungsanleitung al dente kochen",
+                "In der Zwischenzeit die zusätzlichen Zutaten vorbereiten und in einer Pfanne mit Olivenöl anbraten",
+                "Die gekochten Nudeln abgießen und zur Pfanne geben",
+                "Alles gut vermengen und mit Salz und Pfeffer abschmecken",
+                "Heiß servieren und nach Belieben mit Parmesan garnieren"
+            ]
+        })
+
+    # Salat-Rezepte
+    if "gemüse" in gefundene_kategorien:
+        rezept_templates.append({
+            "title": "Frischer Kühlschrank-Salat",
+            "description": "Ein knackiger, gesunder Salat mit allem, was dein Kühlschrank hergibt",
+            "base_ingredients": ["Frisches Gemüse", "Olivenöl", "Essig oder Zitrone"],
+            "time": "ca. 15 Minuten",
+            "servings": "2 Personen",
+            "steps": [
+                "Das Gemüse gründlich waschen und in mundgerechte Stücke schneiden",
+                "Alles in einer großen Schüssel vermengen",
+                "Ein einfaches Dressing aus Olivenöl, Essig, Salz und Pfeffer zubereiten",
+                "Das Dressing über den Salat geben und gut durchmischen",
+                "Optional: Mit Nüssen, Käse oder Croutons toppen",
+                "Sofort servieren und genießen"
+            ]
+        })
+
+    # Pfannengericht
+    if "fleisch" in gefundene_kategorien or "gemüse" in gefundene_kategorien:
+        rezept_templates.append({
+            "title": "Buntes Pfannengericht",
+            "description": "Ein herzhaftes One-Pan-Gericht mit proteinreichen Zutaten und Gemüse",
+            "base_ingredients": ["Protein deiner Wahl", "Gemüse", "Gewürze"],
+            "time": "ca. 30 Minuten",
+            "servings": "2-3 Personen",
+            "steps": [
+                "Die Hauptzutaten in mundgerechte Stücke schneiden",
+                "Eine große Pfanne mit etwas Öl erhitzen",
+                "Zuerst das Protein scharf anbraten, bis es goldbraun ist",
+                "Das Gemüse hinzufügen und unter Rühren weiterbraten",
+                "Mit deinen Lieblingsgewürzen würzen und abschmecken",
+                "Bei mittlerer Hitze fertig garen bis alles durch ist",
+                "Mit Reis, Nudeln oder Brot servieren"
+            ]
+        })
+
+    # Omelette/Frühstück
+    if "milchprodukte" in gefundene_kategorien:
+        rezept_templates.append({
+            "title": "Gefülltes Omelette",
+            "description": "Ein protein-reiches Omelette gefüllt mit frischen Zutaten",
+            "base_ingredients": ["3-4 Eier", "Butter oder Öl", "Salz & Pfeffer"],
+            "time": "ca. 10-15 Minuten",
+            "servings": "1-2 Personen",
+            "steps": [
+                "Die Eier in einer Schüssel verquirlen und mit Salz und Pfeffer würzen",
+                "Eine Pfanne bei mittlerer Hitze erhitzen und Butter oder Öl hineingeben",
+                "Die Eiermischung in die Pfanne gießen und gleichmäßig verteilen",
+                "Die Füllung (Gemüse, Käse, etc.) auf einer Hälfte des Omeletts verteilen",
+                "Wenn die Unterseite gestockt ist, das Omelette vorsichtig zusammenklappen",
+                "Noch 1-2 Minuten braten lassen, dann auf einen Teller gleiten lassen",
+                "Mit frischen Kräutern garnieren und sofort servieren"
+            ]
+        })
+
+    # Suppe
+    rezept_templates.append({
+        "title": "Hausgemachte Kühlschrank-Suppe",
+        "description": "Eine wärmende, nahrhafte Suppe aus übrig gebliebenen Zutaten",
+        "base_ingredients": ["Gemüsebrühe oder Wasser", "Zwiebeln", "Gewürze"],
+        "time": "ca. 35-40 Minuten",
+        "servings": "3-4 Personen",
+        "steps": [
+            "Zwiebeln und Knoblauch fein hacken und in einem Topf mit Öl anschwitzen",
+            "Härteres Gemüse hinzufügen und kurz mitbraten",
+            "Mit Brühe oder Wasser aufgießen und zum Kochen bringen",
+            "Weicheres Gemüse und weitere Zutaten hinzufügen",
+            "Bei mittlerer Hitze 20-25 Minuten köcheln lassen",
+            "Mit Salz, Pfeffer und Gewürzen nach Geschmack abschmecken",
+            "Optional: Mit einem Stabmixer pürieren oder stückig lassen",
+            "Mit frischem Brot servieren"
+            ]
+        })
+
+    # Wähle ein passendes Rezept oder das letzte als Fallback
+    if not rezept_templates:
+        rezept_templates.append({
+            "title": "Kreative Kühlschrank-Verwertung",
+            "description": "Ein improvisiertes Gericht mit deinen verfügbaren Zutaten",
+            "base_ingredients": ["Deine verfügbaren Produkte", "Öl zum Braten", "Gewürze"],
+            "time": "ca. 25-30 Minuten",
+            "servings": "2 Personen",
+            "steps": [
+                "Alle verfügbaren Zutaten waschen und vorbereiten",
+                "Eine Pfanne mit Öl erhitzen",
+                "Die Zutaten der Reihe nach hinzufügen - erst härtere, dann weichere",
+                "Unter regelmäßigem Rühren garen",
+                "Kreativ mit Gewürzen abschmecken",
+                "Wenn alles gar ist, auf Tellern anrichten und genießen"
+            ]
+        })
+
+    # Wähle zufälliges Rezept
+    rezept = random.choice(rezept_templates)
+
+    # Füge die echten Produkte zu den Zutaten hinzu
+    echte_zutaten = [p["name"] for p in produkte_liste[:8]]  # Max 8 Produkte
+    alle_zutaten = rezept["base_ingredients"] + echte_zutaten
+
+    # Entferne Duplikate und behalte Reihenfolge
+    seen = set()
+    unique_zutaten = []
+    for zutat in alle_zutaten:
+        zutat_lower = zutat.lower()
+        if zutat_lower not in seen:
+            seen.add(zutat_lower)
+            unique_zutaten.append(zutat)
+
+    rezept["ingredients"] = unique_zutaten
+
+    return rezept
 
 
 # ------------------ PRODUKTNAME über Barcode ------------------
@@ -152,6 +318,30 @@ def index():
 def logout():
     session.pop("user", None)
     return redirect(url_for("index"))
+
+
+@app.route("/api/generate-recipe")
+def api_generate_recipe():
+    """API Endpunkt zum Generieren von Rezepten basierend auf Benutzerprodukten"""
+    if "user" not in session:
+        return jsonify({"success": False, "message": "Nicht eingeloggt"}), 401
+
+    user = session["user"]
+    if user not in produkte or len(produkte[user]) == 0:
+        return jsonify({
+            "success": False,
+            "message": "Du hast noch keine Produkte in deinem Kühlschrank! Füge erst einige Produkte hinzu."
+        })
+
+    rezept = generiere_rezept(produkte[user])
+
+    if rezept:
+        return jsonify({"success": True, "recipe": rezept})
+    else:
+        return jsonify({
+            "success": False,
+            "message": "Rezeptgenerierung fehlgeschlagen. Bitte versuche es erneut."
+        })
 
 
 # ------------------ MAIN ------------------
