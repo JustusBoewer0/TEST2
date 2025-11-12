@@ -106,7 +106,7 @@ Antworte im folgenden JSON-Format (ohne Markdown, nur pures JSON):
 }}"""
 
         # Generiere mit Gemini
-        model = genai.GenerativeModel('gemini-1.5-pro')
+        model = genai.GenerativeModel('gemini-2.0-flash-exp')
         response = model.generate_content(prompt)
 
         # Parse JSON Response
