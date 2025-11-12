@@ -1,0 +1,9 @@
+Version 1.1.0 - 2025-11-12
+
+Änderungen:
+- Fix: Gemini API Modell von 'gemini-pro' auf 'gemini-1.5-flash' aktualisiert
+  Grund: Das Modell 'gemini-pro' wird nicht mehr von der v1beta API unterstützt
+- Behebt 404 Fehler bei der Rezeptgenerierung
+
+Vorherige Versionen:
+- Version 1.0.0: Initiale Version mit Gemini AI Rezeptgenerator
