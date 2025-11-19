@@ -3,6 +3,7 @@ import requests
 import json
 import os
 import google.generativeai as genai
+from config import GEMINI_API_KEY
 
 app = Flask(__name__)
 app.secret_key = "mega-geheimes-passwort"  # für Sessions
@@ -50,9 +51,8 @@ users = lade_users()
 
 # ------------------ KI REZEPT GENERATOR MIT GEMINI AI ------------------
 
-# Konfiguriere Gemini API (API Key aus Umgebungsvariable)
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
-if GEMINI_API_KEY:
+# Konfiguriere Gemini API (API Key aus config.py)
+if GEMINI_API_KEY and GEMINI_API_KEY != "HIER_DEINEN_API_KEY_EINTRAGEN":
     genai.configure(api_key=GEMINI_API_KEY)
 
 def generiere_rezept(produkte_liste):
@@ -68,16 +68,17 @@ def generiere_rezept(produkte_liste):
     zutaten_text = ", ".join(produkt_namen)
 
     # Prüfe ob API Key verfügbar ist
-    if not GEMINI_API_KEY:
+    if not GEMINI_API_KEY or GEMINI_API_KEY == "HIER_DEINEN_API_KEY_EINTRAGEN":
         return {
             "title": "⚠️ API Key fehlt",
-            "description": "Um KI-generierte Rezepte zu erhalten, muss ein GEMINI_API_KEY gesetzt werden.",
+            "description": "Um KI-generierte Rezepte zu erhalten, muss ein GEMINI_API_KEY in der config.py Datei eingetragen werden.",
             "ingredients": produkt_namen,
             "steps": [
-                "1. Besuche https://aistudio.google.com/app/apikey",
-                "2. Erstelle einen kostenlosen API Key",
-                "3. Setze die Umgebungsvariable: export GEMINI_API_KEY='dein-api-key'",
-                "4. Starte die App neu"
+                "1. Öffne die Datei 'config.py' im Hauptverzeichnis",
+                "2. Besuche https://aistudio.google.com/app/apikey",
+                "3. Erstelle einen kostenlosen API Key",
+                "4. Trage den API Key in config.py ein (Zeile 15)",
+                "5. Starte die App neu"
             ],
             "time": "N/A",
             "servings": "N/A"
