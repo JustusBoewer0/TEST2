@@ -23,3 +23,6 @@ instance/
 # OS
 .DS_Store
 Thumbs.db
+
+# Config mit API Keys (nicht ins Repository)
+config.py
