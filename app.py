@@ -4,6 +4,8 @@ import json
 import os
 import google.generativeai as genai
 from config import GEMINI_API_KEY
+from config import GEMINI_API_KEY
+import google.generativeai as genai
 
 app = Flask(__name__)
 app.secret_key = "mega-geheimes-passwort"  # für Sessions
@@ -55,6 +57,7 @@ users = lade_users()
 if GEMINI_API_KEY and GEMINI_API_KEY != "HIER_DEINEN_API_KEY_EINTRAGEN":
     genai.configure(api_key=GEMINI_API_KEY)
 
+
 def generiere_rezept(produkte_liste):
     """
     Generiert ein intelligentes Rezept basierend auf verfügbaren Produkten.
@@ -78,10 +81,10 @@ def generiere_rezept(produkte_liste):
                 "2. Besuche https://aistudio.google.com/app/apikey",
                 "3. Erstelle einen kostenlosen API Key",
                 "4. Trage den API Key in config.py ein (Zeile 15)",
-                "5. Starte die App neu"
+                "5. Starte die App neu",
             ],
             "time": "N/A",
-            "servings": "N/A"
+            "servings": "N/A",
         }
 
     try:
@@ -107,7 +110,7 @@ Antworte im folgenden JSON-Format (ohne Markdown, nur pures JSON):
 }}"""
 
         # Generiere mit Gemini
-        model = genai.GenerativeModel('gemini-2.0-flash-exp')
+        model = genai.GenerativeModel("gemini-2.5-flash")
         response = model.generate_content(prompt)
 
         # Parse JSON Response
@@ -116,7 +119,11 @@ Antworte im folgenden JSON-Format (ohne Markdown, nur pures JSON):
         # Entferne Markdown Code-Blöcke falls vorhanden
         if response_text.startswith("```"):
             # Entferne ```json oder ``` am Anfang
-            response_text = response_text.split("\n", 1)[1] if "\n" in response_text else response_text[3:]
+            response_text = (
+                response_text.split("\n", 1)[1]
+                if "\n" in response_text
+                else response_text[3:]
+            )
             # Entferne ``` am Ende
             if response_text.endswith("```"):
                 response_text = response_text[:-3]
@@ -135,10 +142,10 @@ Antworte im folgenden JSON-Format (ohne Markdown, nur pures JSON):
                 "Die Zutaten waschen und vorbereiten",
                 "Kombiniere die Zutaten kreativ",
                 "Mit Gewürzen abschmecken",
-                "Servieren und genießen"
+                "Servieren und genießen",
             ],
             "time": "ca. 25 Minuten",
-            "servings": "2 Personen"
+            "servings": "2 Personen",
         }
     except Exception as e:
         print(f"Fehler bei Rezeptgenerierung: {e}")
@@ -148,7 +155,7 @@ Antworte im folgenden JSON-Format (ohne Markdown, nur pures JSON):
             "ingredients": produkt_namen,
             "steps": ["Bitte versuche es erneut"],
             "time": "N/A",
-            "servings": "N/A"
+            "servings": "N/A",
         }
 
 
@@ -267,20 +274,24 @@ def api_generate_recipe():
 
     user = session["user"]
     if user not in produkte or len(produkte[user]) == 0:
-        return jsonify({
-            "success": False,
-            "message": "Du hast noch keine Produkte in deinem Kühlschrank! Füge erst einige Produkte hinzu."
-        })
+        return jsonify(
+            {
+                "success": False,
+                "message": "Du hast noch keine Produkte in deinem Kühlschrank! Füge erst einige Produkte hinzu.",
+            }
+        )
 
     rezept = generiere_rezept(produkte[user])
 
     if rezept:
         return jsonify({"success": True, "recipe": rezept})
     else:
-        return jsonify({
-            "success": False,
-            "message": "Rezeptgenerierung fehlgeschlagen. Bitte versuche es erneut."
-        })
+        return jsonify(
+            {
+                "success": False,
+                "message": "Rezeptgenerierung fehlgeschlagen. Bitte versuche es erneut.",
+            }
+        )
 
 
 # ------------------ MAIN ------------------
