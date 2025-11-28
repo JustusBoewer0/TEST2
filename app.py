@@ -98,6 +98,10 @@ WICHTIG:
 - Verwende NUR Zutaten, die sinnvoll zusammenpassen
 - Falls die Zutaten nicht für ein vollständiges Gericht reichen, schlage ein einfaches Gericht vor oder empfehle, was noch besorgt werden sollte
 - Sei kreativ aber realistisch
+- Erstelle ein Rezept nur aus den Zutaten, die bald ablaufen, und achte darauf, dass sie geschmacklich zusammenpassen und ein sinnvolles Gericht ergeben.
+- Verwende nur Zutaten, die geschmacklich gut zusammenpassen, und lasse alle anderen weg. Versuche nicht, alles auf einmal zu verwenden.
+- Nutze herrkömliche Gerichte und probiere nicht neuem Sachen zu erfinden und probiere nicht alles in Rezept zu quetschen. Richte dich aber bei der Auswahl der Produkte an das Ablaufdatum
+- Es sollen keine Verrückten Kombinationen sein
 
 Antworte im folgenden JSON-Format (ohne Markdown, nur pures JSON):
 {{
