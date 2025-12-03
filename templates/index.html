@@ -383,7 +383,7 @@
       .recipe-favorite {
         position: absolute;
         top: 16px;
-        right: 16px;
+        right: 60px;
         font-size: 28px;
         cursor: pointer;
         transition: transform 0.2s ease;
@@ -396,6 +396,23 @@
 
       .recipe-favorite.favorited {
         filter: drop-shadow(0 2px 8px rgba(255,215,0,0.8));
+      }
+
+      .recipe-delete {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        font-size: 24px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        padding: 4px 8px;
+        border-radius: 8px;
+        background: transparent;
+      }
+
+      .recipe-delete:hover {
+        background: rgba(255, 0, 0, 0.1);
+        transform: scale(1.15);
       }
 
       .recipe-navigation {
@@ -444,6 +461,132 @@
         color: var(--text-secondary);
         font-size: 0.85rem;
         margin-top: 8px;
+      }
+
+      /* Stefan Easter Egg */
+      .stefan-produkt {
+        background: linear-gradient(135deg, #ffd700 0%, #ffed4e 50%, #ffd700 100%);
+        border: 3px solid #ff8c00;
+        box-shadow: 0 4px 20px rgba(255, 215, 0, 0.5);
+        animation: goldenGlow 2s ease-in-out infinite;
+        position: relative;
+        overflow: hidden;
+      }
+
+      [data-theme="dark"] .stefan-produkt {
+        background: linear-gradient(135deg, #b8860b 0%, #daa520 50%, #b8860b 100%);
+        border: 3px solid #ff8c00;
+        box-shadow: 0 4px 20px rgba(218, 165, 32, 0.5);
+      }
+
+      @keyframes goldenGlow {
+        0%, 100% {
+          box-shadow: 0 4px 20px rgba(255, 215, 0, 0.5);
+          transform: translateY(0);
+        }
+        50% {
+          box-shadow: 0 6px 30px rgba(255, 215, 0, 0.8);
+          transform: translateY(-2px);
+        }
+      }
+
+      .stefan-produkt::before {
+        content: '✨';
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 24px;
+        animation: sparkle 1.5s ease-in-out infinite;
+      }
+
+      .stefan-produkt::after {
+        content: '✨';
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 24px;
+        animation: sparkle 1.5s ease-in-out infinite 0.75s;
+      }
+
+      @keyframes sparkle {
+        0%, 100% {
+          opacity: 0.5;
+          transform: translateY(-50%) scale(1);
+        }
+        50% {
+          opacity: 1;
+          transform: translateY(-50%) scale(1.2);
+        }
+      }
+
+      /* Easter Egg Modal */
+      .easter-egg-modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        justify-content: center;
+        align-items: center;
+        z-index: 3000;
+        animation: fadeIn 0.5s ease;
+      }
+
+      .easter-egg-content {
+        text-align: center;
+        padding: 40px;
+        animation: zoomIn 0.5s ease;
+      }
+
+      .easter-egg-content img {
+        max-width: 90%;
+        max-height: 70vh;
+        border-radius: 20px;
+        box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
+        border: 5px solid #ffd700;
+        animation: float 3s ease-in-out infinite;
+      }
+
+      @keyframes float {
+        0%, 100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-20px);
+        }
+      }
+
+      .easter-egg-title {
+        color: white;
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 30px;
+        text-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        animation: pulse 2s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%, 100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+      }
+
+      @media (max-width: 600px) {
+        .easter-egg-title {
+          font-size: 2rem;
+        }
+
+        .easter-egg-content {
+          padding: 20px;
+        }
+
+        .easter-egg-content img {
+          max-width: 95%;
+        }
       }
 
       @media (max-width: 600px) {
@@ -622,6 +765,13 @@
         {% endfor %} {% else %}
         <p class="leer">Noch keine Produkte eingetragen</p>
         {% endif %}
+
+        <!-- Stefan Easter Egg -->
+        <div class="produkt stefan-produkt" id="stefanEasterEgg" style="cursor: pointer;">
+          <div class="produkt-name" style="font-weight: 700; font-size: 1.1rem; padding: 0 40px; text-align: center;">
+            🌟 Stefan 🌟
+          </div>
+        </div>
       </div>
       {% endif %}
     </div>
@@ -861,6 +1011,19 @@
         </div>
         <div style="text-align: center; padding: 10px; background: var(--card-bg);">
           <button class="close-btn" onclick="closeRecipeBook()">✖ Schließen</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stefan Easter Egg Modal -->
+    <div class="easter-egg-modal" id="easterEggModal">
+      <div class="easter-egg-content">
+        <h1 class="easter-egg-title">🎉 Du hast Stefan gefunden! 🎉</h1>
+        <img src="/static/stefan/stefan.png" alt="Stefan" />
+        <div style="margin-top: 30px;">
+          <button class="close-btn" onclick="closeEasterEgg()" style="font-size: 1.2rem; padding: 12px 30px;">
+            ✖ Schließen
+          </button>
         </div>
       </div>
     </div>
@@ -1343,7 +1506,10 @@
             <div class="recipe-favorite ${recipeData.is_favorite ? 'favorited' : ''}" data-recipe-id="${recipeData.id}">
               ${recipeData.is_favorite ? '⭐' : '☆'}
             </div>
-            <h3 style="color: var(--text-primary); margin-top: 0; padding-right: 40px;">${recipe.title}</h3>
+            <div class="recipe-delete" data-recipe-id="${recipeData.id}" title="Rezept löschen">
+              🗑️
+            </div>
+            <h3 style="color: var(--text-primary); margin-top: 0; padding-right: 100px;">${recipe.title}</h3>
             <p class="recipe-date">📅 Erstellt am ${dateStr}</p>
             <p style="color: var(--text-secondary); font-style: italic; margin: 15px 0;">${recipe.description}</p>
 
@@ -1368,6 +1534,10 @@
           // Add favorite toggle listener
           const favBtn = recipeCard.querySelector(".recipe-favorite");
           favBtn.addEventListener("click", () => toggleFavorite(recipeData.id, favBtn));
+
+          // Add delete listener
+          const delBtn = recipeCard.querySelector(".recipe-delete");
+          delBtn.addEventListener("click", () => deleteRecipe(recipeData.id));
         });
 
         // Update pagination
@@ -1410,6 +1580,47 @@
         }
       }
 
+      async function deleteRecipe(recipeId) {
+        // Confirm deletion
+        if (!confirm("Möchtest du dieses Rezept wirklich löschen?")) {
+          return;
+        }
+
+        try {
+          const response = await fetch("/api/delete-recipe", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ recipe_id: recipeId })
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            // Remove from local data
+            currentRecipes = currentRecipes.filter(r => r.id !== recipeId);
+
+            // Re-render page (might need to adjust current page if it's now empty)
+            if (currentRecipes.length === 0) {
+              currentPage = 0;
+            } else {
+              const totalPages = Math.ceil(currentRecipes.length / recipesPerPage);
+              if (currentPage >= totalPages) {
+                currentPage = totalPages - 1;
+              }
+            }
+
+            renderRecipePage();
+          } else {
+            alert("Fehler beim Löschen: " + data.message);
+          }
+        } catch (error) {
+          console.error("Error deleting recipe:", error);
+          alert("Fehler beim Löschen des Rezepts");
+        }
+      }
+
       prevPageBtn?.addEventListener("click", () => {
         if (currentPage > 0) {
           currentPage--;
@@ -1431,6 +1642,31 @@
       recipeBookModal?.addEventListener("click", (e) => {
         if (e.target === recipeBookModal) {
           closeRecipeBook();
+        }
+      });
+
+      // Stefan Easter Egg
+      const stefanEasterEgg = document.getElementById("stefanEasterEgg");
+      const easterEggModal = document.getElementById("easterEggModal");
+
+      function closeEasterEgg() {
+        easterEggModal.style.display = "none";
+      }
+
+      stefanEasterEgg?.addEventListener("click", function() {
+        easterEggModal.style.display = "flex";
+      });
+
+      easterEggModal?.addEventListener("click", function(e) {
+        if (e.target === easterEggModal) {
+          closeEasterEgg();
+        }
+      });
+
+      // ESC key to close Easter Egg
+      document.addEventListener("keydown", function(e) {
+        if (e.key === "Escape" && easterEggModal.style.display === "flex") {
+          closeEasterEgg();
         }
       });
     </script>

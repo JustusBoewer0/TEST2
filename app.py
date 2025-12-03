@@ -421,6 +421,34 @@ def api_toggle_favorite():
     return jsonify({"success": False, "message": "Rezept nicht gefunden"})
 
 
+@app.route("/api/delete-recipe", methods=["POST"])
+def api_delete_recipe():
+    """API Endpunkt zum Löschen eines Rezepts"""
+    global rezepte
+    if "user" not in session:
+        return jsonify({"success": False, "message": "Nicht eingeloggt"}), 401
+
+    user = session["user"]
+    data = request.get_json()
+    recipe_id = data.get("recipe_id")
+
+    if not recipe_id:
+        return jsonify({"success": False, "message": "Rezept ID fehlt"})
+
+    if user not in rezepte:
+        return jsonify({"success": False, "message": "Keine Rezepte gefunden"})
+
+    # Finde und lösche Rezept
+    initial_count = len(rezepte[user])
+    rezepte[user] = [r for r in rezepte[user] if r["id"] != recipe_id]
+
+    if len(rezepte[user]) < initial_count:
+        speichere_rezepte(rezepte)
+        return jsonify({"success": True, "message": "Rezept wurde gelöscht"})
+
+    return jsonify({"success": False, "message": "Rezept nicht gefunden"})
+
+
 # ------------------ MAIN ------------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080, debug=True)
