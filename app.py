@@ -4,8 +4,7 @@ import json
 import os
 import google.generativeai as genai
 from config import GEMINI_API_KEY
-from config import GEMINI_API_KEY
-import google.generativeai as genai
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 app.secret_key = "mega-geheimes-passwort"  # für Sessions
@@ -13,6 +12,7 @@ app.jinja_env.globals.update(enumerate=enumerate)
 
 DATEI = "produkte.json"
 USER_DATEI = "users.json"
+REZEPTE_DATEI = "rezepte.json"
 
 
 # ------------------ PRODUKTE LADEN ------------------
@@ -49,6 +49,41 @@ def speichere_users(users):
 
 
 users = lade_users()
+
+
+# ------------------ REZEPTE LADEN UND SPEICHERN ------------------
+def lade_rezepte():
+    if os.path.exists(REZEPTE_DATEI):
+        with open(REZEPTE_DATEI, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            if isinstance(data, dict):
+                return data
+    return {}
+
+
+def speichere_rezepte(rezepte):
+    with open(REZEPTE_DATEI, "w", encoding="utf-8") as f:
+        json.dump(rezepte, f, ensure_ascii=False, indent=2)
+
+
+def bereinige_alte_rezepte(user_rezepte):
+    """Entfernt Rezepte, die älter als 7 Tage sind und nicht favorisiert sind"""
+    heute = datetime.now()
+    gefilterte_rezepte = []
+
+    for rezept in user_rezepte:
+        erstellt_am = datetime.fromisoformat(rezept.get("created_at", heute.isoformat()))
+        tage_alt = (heute - erstellt_am).days
+        ist_favorit = rezept.get("is_favorite", False)
+
+        # Behalte Rezept, wenn es favorisiert ist oder jünger als 7 Tage
+        if ist_favorit or tage_alt < 7:
+            gefilterte_rezepte.append(rezept)
+
+    return gefilterte_rezepte
+
+
+rezepte = lade_rezepte()
 
 
 # ------------------ KI REZEPT GENERATOR MIT GEMINI AI ------------------
@@ -270,9 +305,37 @@ def logout():
     return redirect(url_for("index"))
 
 
+@app.route("/api/change-password", methods=["POST"])
+def change_password():
+    """API Endpunkt zum Ändern des Passworts"""
+    if "user" not in session:
+        return jsonify({"success": False, "message": "Nicht eingeloggt"}), 401
+
+    user = session["user"]
+    data = request.get_json()
+    current_password = data.get("current_password", "")
+    new_password = data.get("new_password", "")
+
+    if not current_password or not new_password:
+        return jsonify({"success": False, "message": "Bitte alle Felder ausfüllen"})
+
+    if users.get(user) != current_password:
+        return jsonify({"success": False, "message": "Aktuelles Passwort ist falsch"})
+
+    if len(new_password) < 3:
+        return jsonify(
+            {"success": False, "message": "Neues Passwort muss mindestens 3 Zeichen lang sein"}
+        )
+
+    users[user] = new_password
+    speichere_users(users)
+    return jsonify({"success": True, "message": "Passwort erfolgreich geändert"})
+
+
 @app.route("/api/generate-recipe")
 def api_generate_recipe():
     """API Endpunkt zum Generieren von Rezepten basierend auf Benutzerprodukten"""
+    global rezepte
     if "user" not in session:
         return jsonify({"success": False, "message": "Nicht eingeloggt"}), 401
 
@@ -288,7 +351,22 @@ def api_generate_recipe():
     rezept = generiere_rezept(produkte[user])
 
     if rezept:
-        return jsonify({"success": True, "recipe": rezept})
+        # Speichere Rezept in History
+        if user not in rezepte:
+            rezepte[user] = []
+
+        # Füge Metadaten hinzu
+        rezept_mit_meta = {
+            "id": datetime.now().isoformat(),
+            "created_at": datetime.now().isoformat(),
+            "is_favorite": False,
+            "recipe": rezept,
+        }
+
+        rezepte[user].insert(0, rezept_mit_meta)  # Neuestes zuerst
+        speichere_rezepte(rezepte)
+
+        return jsonify({"success": True, "recipe": rezept, "recipe_id": rezept_mit_meta["id"]})
     else:
         return jsonify(
             {
@@ -296,6 +374,51 @@ def api_generate_recipe():
                 "message": "Rezeptgenerierung fehlgeschlagen. Bitte versuche es erneut.",
             }
         )
+
+
+@app.route("/api/recipe-history")
+def api_recipe_history():
+    """API Endpunkt zum Abrufen der Rezept-History"""
+    global rezepte
+    if "user" not in session:
+        return jsonify({"success": False, "message": "Nicht eingeloggt"}), 401
+
+    user = session["user"]
+    if user not in rezepte:
+        rezepte[user] = []
+
+    # Bereinige alte Rezepte
+    rezepte[user] = bereinige_alte_rezepte(rezepte[user])
+    speichere_rezepte(rezepte)
+
+    return jsonify({"success": True, "recipes": rezepte[user]})
+
+
+@app.route("/api/toggle-favorite", methods=["POST"])
+def api_toggle_favorite():
+    """API Endpunkt zum Favorisieren/Unfavorisieren eines Rezepts"""
+    global rezepte
+    if "user" not in session:
+        return jsonify({"success": False, "message": "Nicht eingeloggt"}), 401
+
+    user = session["user"]
+    data = request.get_json()
+    recipe_id = data.get("recipe_id")
+
+    if not recipe_id:
+        return jsonify({"success": False, "message": "Rezept ID fehlt"})
+
+    if user not in rezepte:
+        return jsonify({"success": False, "message": "Keine Rezepte gefunden"})
+
+    # Finde und toggle Favorit
+    for rezept in rezepte[user]:
+        if rezept["id"] == recipe_id:
+            rezept["is_favorite"] = not rezept.get("is_favorite", False)
+            speichere_rezepte(rezepte)
+            return jsonify({"success": True, "is_favorite": rezept["is_favorite"]})
+
+    return jsonify({"success": False, "message": "Rezept nicht gefunden"})
 
 
 # ------------------ MAIN ------------------
